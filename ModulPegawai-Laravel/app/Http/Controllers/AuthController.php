@@ -1,0 +1,47 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class AuthController extends Controller
+{
+    // Menampilkan halaman form login
+    public function showLoginForm()
+    {
+        return view('auth.login');
+    }
+
+    // Proses autentikasi login (disesuaikan dengan modul dosenmu)
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'username' => ['required', 'string'],
+            'password' => ['required', 'string'],
+        ]);
+
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            $request->session()->regenerate();
+
+            // Disesuaikan ke rute tabel pegawai (tambah.index)
+            return redirect()->intended(route('tambah.index'))
+                             ->with('success', 'Selamat datang, ' . Auth::user()->username . '!');
+        }
+
+        return back()
+            ->withErrors(['username' => 'Username atau password salah.'])
+            ->onlyInput('username');
+    }
+
+    // Proses logout (disesuaikan dengan modul dosenmu)
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        // Diarahkan kembali ke halaman login
+        return redirect()->route('login')->with('success', 'Anda berhasil logout.');
+    }
+}
